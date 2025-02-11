@@ -154,10 +154,10 @@ def answer_query(query: str, index: faiss.IndexFlatL2, chunks: List[str], client
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "Você é um assistente que ajuda com perguntas sobre o manual de normalização ABNT."},
-                {"role": "user", "content": f"Contexto:\n{context}\n\nPergunta: {query}"}
+                {"role": "system", "content": "Contexto:\n{context}\n\n"},
+                {"role": "user", "content": f"Pergunta: {query}"}
             ],
-            temperature=0.7,
-            max_tokens=500
+            temperature=1
         )
         answer = response.choices[0].message.content
         return answer
