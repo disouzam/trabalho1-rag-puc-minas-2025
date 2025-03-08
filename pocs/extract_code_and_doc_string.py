@@ -8,7 +8,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 def main():
-    logger_setup(logger, 'extract_code_and_doc_string.log')
+    logger_setup(logger, 'pocs/extract_code_and_doc_string.log')
 
     logger.info("===============================")
     logger.info("Início da execução")
