@@ -29,8 +29,7 @@
             "request": "launch",
             "module": "pocs.reconstruct_python_file",
             "args": [
-                "${workspaceFolder}/../ydata-profiling/src/ydata_profiling/compare_reports.py",
-                "${workspaceFolder}/../ydata-profiling/src/ydata_profiling/profile_report.py"
+                "${workspaceFolder}/../ydata-profiling/src/",
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"

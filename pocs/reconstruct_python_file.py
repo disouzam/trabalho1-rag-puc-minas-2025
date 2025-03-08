@@ -1,3 +1,4 @@
+import os
 import libcst as cst
 import sys
 import logging
@@ -73,8 +74,13 @@ logger.setLevel(logging.DEBUG)
 
 def main(file_path):
 
-    with open(file=file_path, mode="r") as f:  # filename input
-        file_content = f.read()
+    logger.info("Processing file %s", file_path)
+    try:
+        with open(file=file_path, mode="r", encoding="utf-8") as f:  # filename input
+            file_content = f.read()
+    except:
+        logger.error("Failed to parse file %s", file_path)
+        return
 
     source_tree = cst.parse_module(source=file_content)
 
@@ -85,7 +91,7 @@ def main(file_path):
     print(modified_tree.code)
     file_reconstructed = modified_tree.code
 
-    with open(file_path, "w") as f:  # filename output
+    with open(file_path, "w", encoding="utf-8") as f:  # filename output
         f.write(file_reconstructed)
 
 
@@ -96,11 +102,18 @@ if __name__ == "__main__":
     logger.info("Início da execução")
     logger.info("")
 
-    file_path = sys.argv[1]
-    main(file_path)
+    folder_path = sys.argv[1]
+    abs_path = os.path.abspath(folder_path)
 
-    file_path = sys.argv[2]
-    main(file_path)
+    for dirpath, dirnames, filenames in os.walk(abs_path):
+        print(dirpath)
+        print(dirnames)
+        print(filenames)
+
+        for filename in filenames:
+            if filename.endswith(".py"):
+                fullpath = os.path.join(dirpath, filename)
+                main(fullpath)
 
     logger.info("Fim da execução")
     logger.info("===============================")
