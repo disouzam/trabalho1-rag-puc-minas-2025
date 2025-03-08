@@ -1,11 +1,6 @@
-# Instructions
+# Sobre
 
-## Env
+Esse repositório contém customizações do projeto original do [professor Samuel Cardoso](https://github.com/samuelcardoso) para a demonstração prática do uso da técnica Retrieval Augmented Generation aplicada à Engenharia de Software.
 
-pyenv virtualenv 3.10 genai-rag
+O repositório original pode ser encontrado no link https://github.com/samuelcardoso/genai-rag e há também um fork no meu perfil pessoal em https://github.com/disouzam/genai-rag.
 
-pip install -r requirements.txt
-
-## Run
-
-python main.py
