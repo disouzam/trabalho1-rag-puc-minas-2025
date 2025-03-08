@@ -8,17 +8,19 @@
             "name": "Debug main file",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/main.py",
-            "console": "integratedTerminal"
+            "module": "main",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src"
         },
         {
             "name": "Debug extract_code_and_doc_string file",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/pocs/extract_code_and_doc_string.py",
+            "module": "pocs.extract_code_and_doc_string",
             "args": [
                 "${workspaceFolder}/../ydata-profiling/src/ydata_profiling/compare_reports.py"
             ],
+            "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         },
         {

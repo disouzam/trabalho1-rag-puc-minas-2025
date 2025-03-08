@@ -1,12 +1,11 @@
 """ Módulo principal para o trabalho de uso de RAG para Engenharia de Software
 """
-
 import os
 import re
 import logging
-from logging.handlers import RotatingFileHandler
 import pickle
 from typing import List
+from utils.custom_logging import logger_setup
 
 import numpy as np
 import faiss
@@ -19,7 +18,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 def main():
-    logger_setup()
+    logger_setup(logger, 'genai-rag.log')
 
     logger.info("===============================")
     logger.info("Início da execução")
@@ -36,7 +35,7 @@ def main():
         logger.info(
             "Embeddings não encontrados. Processando PDF e criando embeddings..."
         )
-        pdf_path = "pdfs/manual_de_normalizacao_abnt.pdf"
+        pdf_path = "../pdfs/manual_de_normalizacao_abnt.pdf"
         text = extract_text_from_pdf(pdf_path)
         chunks = split_text_into_chunks(text)
         embeddings = get_embeddings(chunks, client)
@@ -67,32 +66,6 @@ def get_api_key():
         )
         return None
     return api_key
-
-def logger_setup():
-    #create formatter
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
-
-    # create console handler
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-
-    # add formatter to ch
-    ch.setFormatter(formatter)
-
-    # add ch to logger
-    logger.addHandler(ch)
-
-    # create file handler which logs even debug messages
-    fh = RotatingFileHandler('genai-rag.log', maxBytes=10000000, backupCount=100, encoding='utf-8')
-    fh.doRollover()
-    fh.setLevel(logging.DEBUG)
-
-    # add formatter to fh
-    fh.setFormatter(formatter)
-
-    # add fh to logger
-    logger.addHandler(fh)
-
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     logger.info("Extraindo texto do PDF: %s", pdf_path)
@@ -147,7 +120,7 @@ def get_embeddings(
         embedding = get_embedding(text, client, model)
         embeddings.append(embedding)
         if (i + 1) % 10 == 0 or (i + 1) == len(texts):
-            logger.info("Processados %d chunks.", {i + 1}/{len(texts)})
+            logger.info("Processados %d chunks.", (i + 1)/(len(texts)))
     return embeddings
 
 
