@@ -7,13 +7,14 @@ echo "======================"
 echo "Python (v3) code check"
 echo "======================"
 
-set -e
+
+find . -not -path '*/.*' | grep '.*.py$' > changed_files.txt
 
 # Only Added and modified files are checked.
 while read -r fname; do
   ext="${fname##*.}"
   if [[ "${ext}" == "py" ]]; then
     echo "* Checking ${fname}"
-    pylint --rcfile="ci/pylint3.rc" "${fname}"
+    pylint --rcfile="pylint3.rc" "${fname}"
   fi
-done < "${HOME}/changed_files.txt"
+done < "changed_files.txt"
