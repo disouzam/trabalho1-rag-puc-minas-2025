@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "genai-rag"
+version = "0.1.0"
+description = ""
+authors = ["Dickson Souza <36424026+disouzam@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+openai = "^1.65.4"
+faiss-cpu = "^1.10.0"
+numpy = "^2.2.3"
+pypdf2 = "^3.0.1"
+python-dotenv = "^1.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
