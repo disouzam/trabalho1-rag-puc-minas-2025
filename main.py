@@ -20,6 +20,10 @@ logger.setLevel(logging.INFO)
 def main():
     logger_setup()
 
+    logger.info("===============================")
+    logger.info("Início da execução")
+    logger.info("")
+
     # Carregar variáveis de ambiente
     api_key = get_api_key()
 
@@ -48,6 +52,10 @@ def main():
             break
         answer = answer_query(query, index, chunks, client)
         print("\nResposta:\n", answer)
+
+    logger.info("Fim da execução")
+    logger.info("===============================")
+    logger.info("")
 
 def get_api_key():
     load_dotenv()
