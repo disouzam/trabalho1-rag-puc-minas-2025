@@ -4,6 +4,7 @@
 import os
 import re
 import logging
+from logging.handlers import RotatingFileHandler
 import pickle
 from typing import List
 
@@ -81,8 +82,9 @@ def logger_setup():
     logger.addHandler(ch)
 
     # create file handler which logs even debug messages
-    fh = logging.FileHandler('genai-rag.log')
+    fh = RotatingFileHandler('genai-rag.log', maxBytes=10000000, backupCount=100, encoding='utf-8')
     fh.setLevel(logging.DEBUG)
+    fh.doRollover()
 
     # add formatter to fh
     fh.setFormatter(formatter)
