@@ -16,7 +16,7 @@ from openai import OpenAI
 
 # Configuração do logging
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 def main():
     logger_setup()
@@ -74,6 +74,7 @@ def logger_setup():
 
     # create console handler
     ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
 
     # add formatter to ch
     ch.setFormatter(formatter)
@@ -83,8 +84,8 @@ def logger_setup():
 
     # create file handler which logs even debug messages
     fh = RotatingFileHandler('genai-rag.log', maxBytes=10000000, backupCount=100, encoding='utf-8')
-    fh.setLevel(logging.DEBUG)
     fh.doRollover()
+    fh.setLevel(logging.DEBUG)
 
     # add formatter to fh
     fh.setFormatter(formatter)
@@ -210,8 +211,10 @@ def answer_query(
     query_embedding = get_embedding(query, client)
     indices, distances = search_index(index, query_embedding, k) # pylint: disable=unused-variable
     relevant_chunks = [chunks[i] for i in indices]
-    context = "\n\n".join(relevant_chunks) # pylint: disable=unused-variable
+    context = "\n\n".join(relevant_chunks)
     try:
+        logger.debug("Contexto:\n%s", context)
+        logger.debug("Query:\n%s", query)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
