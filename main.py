@@ -21,13 +21,7 @@ def main():
     logger_setup()
 
     # Carregar variáveis de ambiente
-    load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        logger.error(
-            "Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env"
-        )
-        return
+    api_key = get_api_key()
 
     # Criar o cliente OpenAI
     client = OpenAI(api_key=api_key, max_retries=5)
@@ -54,6 +48,16 @@ def main():
             break
         answer = answer_query(query, index, chunks, client)
         print("\nResposta:\n", answer)
+
+def get_api_key():
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        logger.error(
+            "Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env"
+        )
+        return
+    return api_key
 
 def logger_setup():
     #create formatter
