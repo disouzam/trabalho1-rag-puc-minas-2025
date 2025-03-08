@@ -19,7 +19,7 @@ def main():
     load_dotenv()
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        logging.error("Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env.")
+        logging.error("Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env")
         return
 
     # Criar o cliente OpenAI
