@@ -13,13 +13,17 @@ from openai import OpenAI
 
 def main():
     # Configuração do logging
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+    )
 
     # Carregar variáveis de ambiente
     load_dotenv()
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        logging.error("Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env")
+        logging.error(
+            "Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env"
+        )
         return
 
     # Criar o cliente OpenAI
@@ -27,8 +31,10 @@ def main():
 
     embeddings, chunks, index = load_embeddings()
     if embeddings is None:
-        logging.info("Embeddings não encontrados. Processando PDF e criando embeddings...")
-        pdf_path = 'pdfs/manual_de_normalizacao_abnt.pdf'
+        logging.info(
+            "Embeddings não encontrados. Processando PDF e criando embeddings..."
+        )
+        pdf_path = "pdfs/manual_de_normalizacao_abnt.pdf"
         text = extract_text_from_pdf(pdf_path)
         chunks = split_text_into_chunks(text)
         embeddings = get_embeddings(chunks, client)
@@ -41,7 +47,7 @@ def main():
     print("Digite sua pergunta (ou 'sair' para terminar):")
     while True:
         query = input(">> ")
-        if query.lower() == 'sair':
+        if query.lower() == "sair":
             break
         answer = answer_query(query, index, chunks, client)
         print("\nResposta:\n", answer)
@@ -49,9 +55,9 @@ def main():
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     logging.info(f"Extraindo texto do PDF: {pdf_path}")
-    text = ''
+    text = ""
     try:
-        with open(pdf_path, 'rb') as file:
+        with open(pdf_path, "rb") as file:
             pdf_reader = PyPDF2.PdfReader(file)
             for page_num in range(len(pdf_reader.pages)):
                 page = pdf_reader.pages[page_num]
@@ -63,12 +69,12 @@ def extract_text_from_pdf(pdf_path: str) -> str:
 
 def split_text_into_chunks(text: str, max_chunk_size: int = 5000) -> List[str]:
     logging.info("Dividindo o texto em chunks.")
-    sentences = re.split(r'(?<=[.?!])\s+', text)
+    sentences = re.split(r"(?<=[.?!])\s+", text)
     chunks = []
-    current_chunk = ''
+    current_chunk = ""
     for sentence in sentences:
         if len(current_chunk) + len(sentence) <= max_chunk_size:
-            current_chunk += ' ' + sentence
+            current_chunk += " " + sentence
         else:
             chunks.append(current_chunk.strip())
             current_chunk = sentence
@@ -78,7 +84,9 @@ def split_text_into_chunks(text: str, max_chunk_size: int = 5000) -> List[str]:
     return chunks
 
 
-def get_embedding(text: str, client, model: str = "text-embedding-3-small") -> List[float]:
+def get_embedding(
+    text: str, client, model: str = "text-embedding-3-small"
+) -> List[float]:
     text = text.replace("\n", " ")
     try:
         response = client.embeddings.create(input=[text], model=model)
@@ -89,7 +97,9 @@ def get_embedding(text: str, client, model: str = "text-embedding-3-small") -> L
         return []
 
 
-def get_embeddings(texts: List[str], client, model: str = "text-embedding-3-small") -> List[List[float]]:
+def get_embeddings(
+    texts: List[str], client, model: str = "text-embedding-3-small"
+) -> List[List[float]]:
     embeddings = []
     logging.info("Gerando embeddings para os chunks.")
     for i, text in enumerate(texts):
@@ -104,30 +114,40 @@ def create_faiss_index(embeddings: List[List[float]]) -> faiss.IndexFlatL2:
     logging.info("Criando índice FAISS.")
     dimension = len(embeddings[0])
     index = faiss.IndexFlatL2(dimension)
-    index.add(np.array(embeddings).astype('float32'))
+    index.add(np.array(embeddings).astype("float32"))
     return index
 
 
-def save_embeddings(embeddings: List[List[float]], chunks: List[str], index: faiss.IndexFlatL2,
-                    embeddings_file: str = 'embeddings.pkl',
-                    chunks_file: str = 'chunks.pkl',
-                    index_file: str = 'faiss.index'):
+def save_embeddings(
+    embeddings: List[List[float]],
+    chunks: List[str],
+    index: faiss.IndexFlatL2,
+    embeddings_file: str = "embeddings.pkl",
+    chunks_file: str = "chunks.pkl",
+    index_file: str = "faiss.index",
+):
     logging.info("Salvando embeddings, chunks e índice no disco.")
-    with open(embeddings_file, 'wb') as f:
+    with open(embeddings_file, "wb") as f:
         pickle.dump(embeddings, f)
-    with open(chunks_file, 'wb') as f:
+    with open(chunks_file, "wb") as f:
         pickle.dump(chunks, f)
     faiss.write_index(index, index_file)
 
 
-def load_embeddings(embeddings_file: str = 'embeddings.pkl',
-                    chunks_file: str = 'chunks.pkl',
-                    index_file: str = 'faiss.index'):
-    if os.path.exists(embeddings_file) and os.path.exists(chunks_file) and os.path.exists(index_file):
+def load_embeddings(
+    embeddings_file: str = "embeddings.pkl",
+    chunks_file: str = "chunks.pkl",
+    index_file: str = "faiss.index",
+):
+    if (
+        os.path.exists(embeddings_file)
+        and os.path.exists(chunks_file)
+        and os.path.exists(index_file)
+    ):
         logging.info("Carregando embeddings, chunks e índice do disco.")
-        with open(embeddings_file, 'rb') as f:
+        with open(embeddings_file, "rb") as f:
             embeddings = pickle.load(f)
-        with open(chunks_file, 'rb') as f:
+        with open(chunks_file, "rb") as f:
             chunks = pickle.load(f)
         index = faiss.read_index(index_file)
         return embeddings, chunks, index
@@ -138,26 +158,31 @@ def load_embeddings(embeddings_file: str = 'embeddings.pkl',
 
 def search_index(index: faiss.IndexFlatL2, query_embedding: List[float], k: int = 5):
     logging.info("Pesquisando no índice FAISS por embeddings similares.")
-    query_embedding = np.array(query_embedding).astype('float32').reshape(1, -1)
+    query_embedding = np.array(query_embedding).astype("float32").reshape(1, -1)
     distances, indices = index.search(query_embedding, k)
     return indices[0], distances[0]
 
 
-def answer_query(query: str, index: faiss.IndexFlatL2, chunks: List[str], client, k: int = 5) -> str:
+def answer_query(
+    query: str, index: faiss.IndexFlatL2, chunks: List[str], client, k: int = 5
+) -> str:
     logging.info("Respondendo à pergunta do usuário.")
     query_embedding = get_embedding(query, client)
     indices, distances = search_index(index, query_embedding, k)
     relevant_chunks = [chunks[i] for i in indices]
-    context = '\n\n'.join(relevant_chunks)
+    context = "\n\n".join(relevant_chunks)
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Você é um assistente que ajuda com perguntas sobre o manual de normalização ABNT."},
+                {
+                    "role": "system",
+                    "content": "Você é um assistente que ajuda com perguntas sobre o manual de normalização ABNT.",
+                },
                 {"role": "system", "content": "Contexto:\n{context}\n\n"},
-                {"role": "user", "content": f"Pergunta: {query}"}
+                {"role": "user", "content": f"Pergunta: {query}"},
             ],
-            temperature=1
+            temperature=1,
         )
         answer = response.choices[0].message.content
         return answer
