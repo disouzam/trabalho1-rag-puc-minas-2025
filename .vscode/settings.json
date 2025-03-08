@@ -1,7 +1,8 @@
 {
     "conventionalCommits.scopes": [
         "setup",
-        "dependencies"
+        "dependencies",
+        "observability"
     ],
     "files.trimTrailingWhitespace": true
 }
