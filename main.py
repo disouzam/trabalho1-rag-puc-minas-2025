@@ -56,7 +56,7 @@ def get_api_key():
         logger.error(
             "Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env"
         )
-        return
+        return None
     return api_key
 
 def logger_setup():
@@ -84,7 +84,7 @@ def logger_setup():
 
 
 def extract_text_from_pdf(pdf_path: str) -> str:
-    logger.info(f"Extraindo texto do PDF: {pdf_path}")
+    logger.info("Extraindo texto do PDF: %s", pdf_path)
     text = ""
     try:
         with open(pdf_path, "rb") as file:
@@ -93,7 +93,7 @@ def extract_text_from_pdf(pdf_path: str) -> str:
                 page = pdf_reader.pages[page_num]
                 text += page.extract_text()
     except Exception as e:
-        logger.error(f"Erro ao ler o arquivo PDF: {e}")
+        logger.error("Erro ao ler o arquivo PDF: %s", e)
     return text
 
 
@@ -110,7 +110,7 @@ def split_text_into_chunks(text: str, max_chunk_size: int = 5000) -> List[str]:
             current_chunk = sentence
     if current_chunk:
         chunks.append(current_chunk.strip())
-    logger.info(f"Total de chunks criados: {len(chunks)}")
+    logger.info("Total de chunks criados: %d", len(chunks))
     return chunks
 
 
@@ -123,7 +123,7 @@ def get_embedding(
         embedding = response.data[0].embedding
         return embedding
     except Exception as e:
-        logger.error(f"Erro ao obter embedding para o texto: {e}")
+        logger.error("Erro ao obter embedding para o texto: %s", e)
         return []
 
 
@@ -136,7 +136,7 @@ def get_embeddings(
         embedding = get_embedding(text, client, model)
         embeddings.append(embedding)
         if (i + 1) % 10 == 0 or (i + 1) == len(texts):
-            logger.info(f"Processados {i + 1}/{len(texts)} chunks.")
+            logger.info("Processados %d chunks.", {i + 1}/{len(texts)})
     return embeddings
 
 
@@ -181,9 +181,9 @@ def load_embeddings(
             chunks = pickle.load(f)
         index = faiss.read_index(index_file)
         return embeddings, chunks, index
-    else:
-        logger.warning("Arquivos de embeddings não encontrados.")
-        return None, None, None
+
+    logger.warning("Arquivos de embeddings não encontrados.")
+    return None, None, None
 
 
 def search_index(index: faiss.IndexFlatL2, query_embedding: List[float], k: int = 5):
@@ -198,16 +198,17 @@ def answer_query(
 ) -> str:
     logger.info("Respondendo à pergunta do usuário.")
     query_embedding = get_embedding(query, client)
-    indices, distances = search_index(index, query_embedding, k)
+    indices, distances = search_index(index, query_embedding, k) # pylint: disable=unused-variable
     relevant_chunks = [chunks[i] for i in indices]
-    context = "\n\n".join(relevant_chunks)
+    context = "\n\n".join(relevant_chunks) # pylint: disable=unused-variable
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
-                    "content": "Você é um assistente que ajuda com perguntas sobre o manual de normalização ABNT.",
+                    "content": "Você é um assistente que ajuda com " + \
+                    "perguntas sobre o manual de normalização ABNT.",
                 },
                 {"role": "system", "content": "Contexto:\n{context}\n\n"},
                 {"role": "user", "content": f"Pergunta: {query}"},
@@ -217,7 +218,7 @@ def answer_query(
         answer = response.choices[0].message.content
         return answer
     except Exception as e:
-        logger.error(f"Erro ao gerar a resposta: {e}")
+        logger.error("Erro ao gerar a resposta: %s", e)
         return "Desculpe, ocorreu um erro ao gerar a resposta."
 
 
