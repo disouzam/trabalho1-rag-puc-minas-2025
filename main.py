@@ -1,6 +1,10 @@
+""" Módulo principal para o trabalho de uso de RAG para Engenharia de Software
+"""
+
 import os
 import re
 import logging
+from logging.handlers import RotatingFileHandler
 import pickle
 from typing import List
 
@@ -10,159 +14,224 @@ import PyPDF2
 from dotenv import load_dotenv
 from openai import OpenAI
 
+# Configuração do logging
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 def main():
-    # Configuração do logging
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+    logger_setup()
+
+    logger.info("===============================")
+    logger.info("Início da execução")
+    logger.info("")
 
     # Carregar variáveis de ambiente
-    load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        logging.error("Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env.")
-        return
+    api_key = get_api_key()
 
     # Criar o cliente OpenAI
     client = OpenAI(api_key=api_key, max_retries=5)
 
     embeddings, chunks, index = load_embeddings()
     if embeddings is None:
-        logging.info("Embeddings não encontrados. Processando PDF e criando embeddings...")
-        pdf_path = 'pdfs/manual_de_normalizacao_abnt.pdf'
+        logger.info(
+            "Embeddings não encontrados. Processando PDF e criando embeddings..."
+        )
+        pdf_path = "pdfs/manual_de_normalizacao_abnt.pdf"
         text = extract_text_from_pdf(pdf_path)
         chunks = split_text_into_chunks(text)
         embeddings = get_embeddings(chunks, client)
         index = create_faiss_index(embeddings)
         save_embeddings(embeddings, chunks, index)
-        logging.info("Embeddings e índice salvos.")
+        logger.info("Embeddings e índice salvos.")
     else:
-        logging.info("Embeddings carregados dos arquivos.")
+        logger.info("Embeddings carregados dos arquivos.")
 
     print("Digite sua pergunta (ou 'sair' para terminar):")
     while True:
         query = input(">> ")
-        if query.lower() == 'sair':
+        if query.lower() == "sair":
             break
         answer = answer_query(query, index, chunks, client)
         print("\nResposta:\n", answer)
 
+    logger.info("Fim da execução")
+    logger.info("===============================")
+    logger.info("")
+
+def get_api_key():
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        logger.error(
+            "Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env"
+        )
+        return None
+    return api_key
+
+def logger_setup():
+    #create formatter
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+
+    # create console handler
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
+    # create file handler which logs even debug messages
+    fh = RotatingFileHandler('genai-rag.log', maxBytes=10000000, backupCount=100, encoding='utf-8')
+    fh.doRollover()
+    fh.setLevel(logging.DEBUG)
+
+    # add formatter to fh
+    fh.setFormatter(formatter)
+
+    # add fh to logger
+    logger.addHandler(fh)
+
 
 def extract_text_from_pdf(pdf_path: str) -> str:
-    logging.info(f"Extraindo texto do PDF: {pdf_path}")
-    text = ''
+    logger.info("Extraindo texto do PDF: %s", pdf_path)
+    text = ""
     try:
-        with open(pdf_path, 'rb') as file:
+        with open(pdf_path, "rb") as file:
             pdf_reader = PyPDF2.PdfReader(file)
             for page_num in range(len(pdf_reader.pages)):
                 page = pdf_reader.pages[page_num]
                 text += page.extract_text()
     except Exception as e:
-        logging.error(f"Erro ao ler o arquivo PDF: {e}")
+        logger.error("Erro ao ler o arquivo PDF: %s", e)
     return text
 
 
 def split_text_into_chunks(text: str, max_chunk_size: int = 5000) -> List[str]:
-    logging.info("Dividindo o texto em chunks.")
-    sentences = re.split(r'(?<=[.?!])\s+', text)
+    logger.info("Dividindo o texto em chunks.")
+    sentences = re.split(r"(?<=[.?!])\s+", text)
     chunks = []
-    current_chunk = ''
+    current_chunk = ""
     for sentence in sentences:
         if len(current_chunk) + len(sentence) <= max_chunk_size:
-            current_chunk += ' ' + sentence
+            current_chunk += " " + sentence
         else:
             chunks.append(current_chunk.strip())
             current_chunk = sentence
     if current_chunk:
         chunks.append(current_chunk.strip())
-    logging.info(f"Total de chunks criados: {len(chunks)}")
+    logger.info("Total de chunks criados: %d", len(chunks))
     return chunks
 
 
-def get_embedding(text: str, client, model: str = "text-embedding-3-small") -> List[float]:
+def get_embedding(
+    text: str, client, model: str = "text-embedding-3-small"
+) -> List[float]:
     text = text.replace("\n", " ")
     try:
         response = client.embeddings.create(input=[text], model=model)
         embedding = response.data[0].embedding
         return embedding
     except Exception as e:
-        logging.error(f"Erro ao obter embedding para o texto: {e}")
+        logger.error("Erro ao obter embedding para o texto: %s", e)
         return []
 
 
-def get_embeddings(texts: List[str], client, model: str = "text-embedding-3-small") -> List[List[float]]:
+def get_embeddings(
+    texts: List[str], client, model: str = "text-embedding-3-small"
+) -> List[List[float]]:
     embeddings = []
-    logging.info("Gerando embeddings para os chunks.")
+    logger.info("Gerando embeddings para os chunks.")
     for i, text in enumerate(texts):
         embedding = get_embedding(text, client, model)
         embeddings.append(embedding)
         if (i + 1) % 10 == 0 or (i + 1) == len(texts):
-            logging.info(f"Processados {i + 1}/{len(texts)} chunks.")
+            logger.info("Processados %d chunks.", {i + 1}/{len(texts)})
     return embeddings
 
 
 def create_faiss_index(embeddings: List[List[float]]) -> faiss.IndexFlatL2:
-    logging.info("Criando índice FAISS.")
+    logger.info("Criando índice FAISS.")
     dimension = len(embeddings[0])
     index = faiss.IndexFlatL2(dimension)
-    index.add(np.array(embeddings).astype('float32'))
+    index.add(np.array(embeddings).astype("float32"))
     return index
 
 
-def save_embeddings(embeddings: List[List[float]], chunks: List[str], index: faiss.IndexFlatL2,
-                    embeddings_file: str = 'embeddings.pkl',
-                    chunks_file: str = 'chunks.pkl',
-                    index_file: str = 'faiss.index'):
-    logging.info("Salvando embeddings, chunks e índice no disco.")
-    with open(embeddings_file, 'wb') as f:
+def save_embeddings(
+    embeddings: List[List[float]],
+    chunks: List[str],
+    index: faiss.IndexFlatL2,
+    embeddings_file: str = "embeddings.pkl",
+    chunks_file: str = "chunks.pkl",
+    index_file: str = "faiss.index",
+):
+    logger.info("Salvando embeddings, chunks e índice no disco.")
+    with open(embeddings_file, "wb") as f:
         pickle.dump(embeddings, f)
-    with open(chunks_file, 'wb') as f:
+    with open(chunks_file, "wb") as f:
         pickle.dump(chunks, f)
     faiss.write_index(index, index_file)
 
 
-def load_embeddings(embeddings_file: str = 'embeddings.pkl',
-                    chunks_file: str = 'chunks.pkl',
-                    index_file: str = 'faiss.index'):
-    if os.path.exists(embeddings_file) and os.path.exists(chunks_file) and os.path.exists(index_file):
-        logging.info("Carregando embeddings, chunks e índice do disco.")
-        with open(embeddings_file, 'rb') as f:
+def load_embeddings(
+    embeddings_file: str = "embeddings.pkl",
+    chunks_file: str = "chunks.pkl",
+    index_file: str = "faiss.index",
+):
+    if (
+        os.path.exists(embeddings_file)
+        and os.path.exists(chunks_file)
+        and os.path.exists(index_file)
+    ):
+        logger.info("Carregando embeddings, chunks e índice do disco.")
+        with open(embeddings_file, "rb") as f:
             embeddings = pickle.load(f)
-        with open(chunks_file, 'rb') as f:
+        with open(chunks_file, "rb") as f:
             chunks = pickle.load(f)
         index = faiss.read_index(index_file)
         return embeddings, chunks, index
-    else:
-        logging.warning("Arquivos de embeddings não encontrados.")
-        return None, None, None
+
+    logger.warning("Arquivos de embeddings não encontrados.")
+    return None, None, None
 
 
 def search_index(index: faiss.IndexFlatL2, query_embedding: List[float], k: int = 5):
-    logging.info("Pesquisando no índice FAISS por embeddings similares.")
-    query_embedding = np.array(query_embedding).astype('float32').reshape(1, -1)
+    logger.info("Pesquisando no índice FAISS por embeddings similares.")
+    query_embedding = np.array(query_embedding).astype("float32").reshape(1, -1)
     distances, indices = index.search(query_embedding, k)
     return indices[0], distances[0]
 
 
-def answer_query(query: str, index: faiss.IndexFlatL2, chunks: List[str], client, k: int = 5) -> str:
-    logging.info("Respondendo à pergunta do usuário.")
+def answer_query(
+    query: str, index: faiss.IndexFlatL2, chunks: List[str], client, k: int = 5
+) -> str:
+    logger.info("Respondendo à pergunta do usuário.")
     query_embedding = get_embedding(query, client)
-    indices, distances = search_index(index, query_embedding, k)
+    indices, distances = search_index(index, query_embedding, k) # pylint: disable=unused-variable
     relevant_chunks = [chunks[i] for i in indices]
-    context = '\n\n'.join(relevant_chunks)
+    context = "\n\n".join(relevant_chunks)
     try:
+        logger.debug("Contexto:\n%s", context)
+        logger.debug("Query:\n%s", query)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Você é um assistente que ajuda com perguntas sobre o manual de normalização ABNT."},
+                {
+                    "role": "system",
+                    "content": "Você é um assistente que ajuda com " + \
+                    "perguntas sobre o manual de normalização ABNT.",
+                },
                 {"role": "system", "content": "Contexto:\n{context}\n\n"},
-                {"role": "user", "content": f"Pergunta: {query}"}
+                {"role": "user", "content": f"Pergunta: {query}"},
             ],
-            temperature=1
+            temperature=1,
         )
         answer = response.choices[0].message.content
         return answer
     except Exception as e:
-        logging.error(f"Erro ao gerar a resposta: {e}")
+        logger.error("Erro ao gerar a resposta: %s", e)
         return "Desculpe, ocorreu um erro ao gerar a resposta."
 
 

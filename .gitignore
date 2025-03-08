@@ -3,3 +3,4 @@ chunks.pkl
 embeddings.pkl
 faiss.index
 __pycache__
+changed_files.txt
