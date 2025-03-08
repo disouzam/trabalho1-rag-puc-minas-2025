@@ -24,6 +24,18 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Debug reconstruct_python_file file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pocs.reconstruct_python_file",
+            "args": [
+                "${workspaceFolder}/../ydata-profiling/src/ydata_profiling/compare_reports.py",
+                "${workspaceFolder}/../ydata-profiling/src/ydata_profiling/profile_report.py"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",
