@@ -1,3 +1,6 @@
+""" Módulo principal para o trabalho de uso de RAG para Engenharia de Software
+"""
+
 import os
 import re
 import logging
@@ -15,27 +18,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 def main():
-    #create formatter
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
-
-    # create console handler
-    ch = logging.StreamHandler()
-
-    # add formatter to ch
-    ch.setFormatter(formatter)
-
-    # add ch to logger
-    logger.addHandler(ch)
-
-    # create file handler which logs even debug messages
-    fh = logging.FileHandler('genai-rag.log')
-    fh.setLevel(logging.DEBUG)
-
-    # add formatter to fh
-    fh.setFormatter(formatter)
-
-    # add fh to logger
-    logger.addHandler(fh)
+    logger_setup()
 
     # Carregar variáveis de ambiente
     load_dotenv()
@@ -71,6 +54,29 @@ def main():
             break
         answer = answer_query(query, index, chunks, client)
         print("\nResposta:\n", answer)
+
+def logger_setup():
+    #create formatter
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+
+    # create console handler
+    ch = logging.StreamHandler()
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('genai-rag.log')
+    fh.setLevel(logging.DEBUG)
+
+    # add formatter to fh
+    fh.setFormatter(formatter)
+
+    # add fh to logger
+    logger.addHandler(fh)
 
 
 def extract_text_from_pdf(pdf_path: str) -> str:
