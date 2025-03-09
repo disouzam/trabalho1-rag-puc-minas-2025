@@ -13,9 +13,8 @@ from typing import List
 import numpy as np
 import faiss
 import PyPDF2
-from dotenv import load_dotenv
-from openai import OpenAI
 from utils.custom_logging import logger_setup
+from utils.llm_connection import get_llm_client
 
 # Configuração do logging
 logger = logging.getLogger()
@@ -29,7 +28,7 @@ def main():
     logger.info("Início da execução")
     logger.info("")
 
-    client = get_llm_client()
+    client = get_llm_client(logger)
 
     embeddings, chunks, index = load_embeddings()
     if embeddings is None:
@@ -48,7 +47,7 @@ def main():
         chunks = split_text_into_chunks(text)
         logger.debug("Número de chunks gerados: %d", len(chunks))
 
-        embeddings = get_embeddings(chunks, client)
+        embeddings = create_embeddings(chunks, client)
         logger.debug(
             "Tamanho da lista de embeddings gerada a partir dos chunks: %d",
             len(embeddings),
@@ -71,27 +70,6 @@ def main():
     logger.info("Fim da execução")
     logger.info("===============================")
     logger.info("")
-
-
-def get_llm_client():
-    # Carregar variáveis de ambiente
-    api_key = get_api_key()
-
-    # Criar o cliente OpenAI
-    client = OpenAI(api_key=api_key, max_retries=5)
-
-    return client
-
-
-def get_api_key():
-    load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        logger.error(
-            "Chave da API da OpenAI não encontrada. Defina OPENAI_API_KEY no seu arquivo .env"
-        )
-        return None
-    return api_key
 
 
 def extract_text_from_pdf(pdf_path: str) -> str:
@@ -138,7 +116,7 @@ def get_embedding(
         return []
 
 
-def get_embeddings(
+def create_embeddings(
     texts: List[str], client, model: str = "text-embedding-3-small"
 ) -> List[List[float]]:
     embeddings = []
