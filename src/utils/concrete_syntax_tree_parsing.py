@@ -95,6 +95,7 @@ class FunctionWithDocsStrings(cst.CSTVisitor):
 class RemoveFunctionsWithoutDocStrings(cst.CSTTransformer):
     def __init__(self, visitor):
         self.visitor = visitor
+        self.function_chunks = []
 
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
@@ -105,6 +106,9 @@ class RemoveFunctionsWithoutDocStrings(cst.CSTTransformer):
 
         if docstring is None or len(docstring.strip()) == 0:
             updated_node = cst.RemoveFromParent()
+        else:
+            # https://stackoverflow.com/questions/60867937/libcst-converting-arbitrary-nodes-to-code/63421188#63421188
+            self.function_chunks.append(cst.Module([]).code_for_node(original_node))
 
         return super().leave_FunctionDef(original_node, updated_node)
 

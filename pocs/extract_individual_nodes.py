@@ -23,14 +23,13 @@ def main(file_path):
         return
 
     source_tree = cst.parse_module(source=file_content)
-    logger.warning(source_tree.code)
 
     visitor = FunctionWithDocsStrings()
     transformer = RemoveFunctionsWithoutDocStrings(visitor)
     modified_tree = source_tree.visit(transformer)
 
-    logger.warning(modified_tree.code)
     modified_source_code = modified_tree.code
+    function_chunks = transformer.function_chunks
 
     print(modified_source_code)
 
