@@ -85,3 +85,30 @@ class RemoveDocStringTransformer(cst.CSTTransformer):
                 new_node = cst.RemoveFromParent()
 
         return super().leave_Expr(original_node, new_node)
+
+
+class FunctionWithDocsStrings(cst.CSTVisitor):
+    def __init__(self):
+        pass
+
+
+class RemoveFunctionsWithoutDocStrings(cst.CSTTransformer):
+    def __init__(self, visitor):
+        self.visitor = visitor
+
+    def leave_FunctionDef(
+        self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
+    ) -> (
+        cst.BaseStatement | cst.FlattenSentinel[cst.BaseStatement] | cst.RemovalSentinel
+    ):
+        docstring = original_node.get_docstring()
+
+        if docstring is None or len(docstring.strip()) == 0:
+            updated_node = cst.RemoveFromParent()
+
+        return super().leave_FunctionDef(original_node, updated_node)
+
+    def leave_Arg(
+        self, original_node: cst.Arg, updated_node: cst.Arg
+    ) -> cst.Arg | cst.FlattenSentinel[cst.Arg] | cst.RemovalSentinel:
+        return super().leave_Arg(original_node, updated_node)

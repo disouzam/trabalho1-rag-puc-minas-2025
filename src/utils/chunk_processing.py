@@ -1,5 +1,11 @@
 import re
+import libcst as cst
 from typing import List
+
+from utils.concrete_syntax_tree_parsing import (
+    FunctionWithDocsStrings,
+    RemoveFunctionsWithoutDocStrings,
+)
 
 
 def split_text_into_chunks(logger, text: str, max_chunk_size: int = 5000) -> List[str]:
@@ -22,6 +28,15 @@ def split_text_into_chunks(logger, text: str, max_chunk_size: int = 5000) -> Lis
 
 def split_code_into_chunks(logger, text: str, max_chunk_size: int = 5000) -> List[str]:
     logger.info("Dividindo o texto em chunks.")
+
+    source_tree = cst.parse_module(source=text)
+    logger.warning(source_tree.code)
+
+    visitor = FunctionWithDocsStrings()
+    transformer = RemoveFunctionsWithoutDocStrings(visitor)
+    modified_tree = source_tree.visit(transformer)
+
+    logger.warning(modified_tree.code)
 
     sentences = re.split(r"(?<=[.?!])\s+", text)
     chunks = []

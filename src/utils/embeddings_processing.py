@@ -96,11 +96,15 @@ def get_embeddings_from_code_bases(logger, client):
         code_file_contents = extract_source_code_from_repository(
             logger, code_repository_path
         )
-        text = ",".join(code_file_contents)
 
-        logger.debug("Comprimento do texto extraído: %d", len(text))
+        logger.debug(
+            "Número de arquivos-fonte a serem processados: %d", len(code_file_contents)
+        )
 
-        chunks = split_code_into_chunks(logger, text)
+        for code_file_content in code_file_contents:
+            current_file_chunks = split_code_into_chunks(logger, code_file_content)
+            chunks = chunks + current_file_chunks
+
         logger.debug("Número de chunks gerados: %d", len(chunks))
 
         embeddings = create_embeddings(logger, chunks, client)

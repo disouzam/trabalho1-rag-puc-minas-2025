@@ -28,5 +28,6 @@
         "${workspaceFolder}/.venv/python",
         "-m",
         "pylint"
-    ]
+    ],
+    "todo-tree.tree.scanMode": "workspace only"
 }
