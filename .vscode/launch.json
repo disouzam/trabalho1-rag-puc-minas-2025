@@ -13,6 +13,14 @@
             "cwd": "${workspaceFolder}/src"
         },
         {
+            "name": "Debug modified RAG application",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "main",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src"
+        },
+        {
             "name": "Debug extract_code_and_doc_string file",
             "type": "debugpy",
             "request": "launch",
