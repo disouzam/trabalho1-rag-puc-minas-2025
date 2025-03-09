@@ -35,6 +35,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Debug remove_doc_strings_python_file file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pocs.remove_doc_strings_python_file",
+            "args": [
+                "${workspaceFolder}/../ydata-profiling/src/",
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",
