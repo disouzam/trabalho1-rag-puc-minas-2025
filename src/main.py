@@ -24,22 +24,31 @@ def main():
     logger.info("Início da execução")
     logger.info("")
 
-    # Carregar variáveis de ambiente
-    api_key = get_api_key()
-
-    # Criar o cliente OpenAI
-    client = OpenAI(api_key=api_key, max_retries=5)
+    client = get_llm_client()
 
     embeddings, chunks, index = load_embeddings()
     if embeddings is None:
         logger.info(
             "Embeddings não encontrados. Processando PDF e criando embeddings..."
         )
-        pdf_path = "../pdfs/manual_de_normalizacao_abnt.pdf"
+        # pdf_path = "../pdfs/manual_de_normalizacao_abnt.pdf"
+        pdf_path = "../pdfs/Paper_PESSOAS_DIGITAL_Silvio_Meira.pdf"
+
+        logger.debug("Arquivo sendo processado: %s", pdf_path)
+
         text = extract_text_from_pdf(pdf_path)
+        logger.debug("Comprimento do texto extraído: %d", len(text))
+
         chunks = split_text_into_chunks(text)
+        logger.debug("Número de chunks gerados: %d", len(chunks))
+
         embeddings = get_embeddings(chunks, client)
-        index = create_faiss_index(embeddings)
+        logger.debug(
+            "Tamanho da lista de embeddings gerada a partir dos chunks: %d",
+            len(embeddings),
+        )
+
+        index: faiss.IndexFlatL2 = create_faiss_index(embeddings)
         save_embeddings(embeddings, chunks, index)
         logger.info("Embeddings e índice salvos.")
     else:
@@ -56,6 +65,16 @@ def main():
     logger.info("Fim da execução")
     logger.info("===============================")
     logger.info("")
+
+
+def get_llm_client():
+    # Carregar variáveis de ambiente
+    api_key = get_api_key()
+
+    # Criar o cliente OpenAI
+    client = OpenAI(api_key=api_key, max_retries=5)
+
+    return client
 
 
 def get_api_key():
@@ -122,7 +141,7 @@ def get_embeddings(
         embedding = get_embedding(text, client, model)
         embeddings.append(embedding)
         if (i + 1) % 10 == 0 or (i + 1) == len(texts):
-            logger.info("Processados %d chunks.", (i + 1) / (len(texts)))
+            logger.info("Processados %d / %d chunks.", i + 1, len(texts))
     return embeddings
 
 
@@ -184,11 +203,22 @@ def answer_query(
 ) -> str:
     logger.info("Respondendo à pergunta do usuário.")
     query_embedding = get_embedding(query, client)
+    logger.debug("Query_embedding: %s", query_embedding)
+
     indices, distances = search_index(  # pylint: disable=unused-variable
         index, query_embedding, k
     )
+
+    logger.debug("Indices: %s", indices)
+
     relevant_chunks = [chunks[i] for i in indices]
+
+    logger.warning("Chunks relevants\n")
+    for contador, chunk in enumerate(relevant_chunks):
+        logger.debug("Chunk relevante #%d: %s\n\n", contador, chunk)
+
     context = "\n\n".join(relevant_chunks)
+
     try:
         logger.debug("Contexto:\n%s", context)
         logger.debug("Query:\n%s", query)
@@ -197,8 +227,8 @@ def answer_query(
             messages=[
                 {
                     "role": "system",
-                    "content": "Você é um assistente que ajuda com "
-                    + "perguntas sobre o manual de normalização ABNT.",
+                    "content": "Você é um especialista em transformação digital"
+                    + " conhecendo bastante do trabalho conduzido no Porto Digital.",
                 },
                 {"role": "system", "content": "Contexto:\n{context}\n\n"},
                 {"role": "user", "content": f"Pergunta: {query}"},
@@ -206,7 +236,9 @@ def answer_query(
             temperature=1,
         )
         answer = response.choices[0].message.content
+        logger.debug("Resposta da LLM: %s", answer)
         return answer
+
     except IOError as ioerror:
         logger.error("Erro ao gerar a resposta: %s", ioerror)
         return "Desculpe, ocorreu um erro ao gerar a resposta."
