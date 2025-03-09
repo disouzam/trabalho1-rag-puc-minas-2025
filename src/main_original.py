@@ -25,7 +25,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def main():
-    logger_setup(logger, "genai-rag.log")
+    logger_setup(logger, "genai-rag-original.log")
 
     logger.info("===============================")
     logger.info("Início da execução")
@@ -33,34 +33,7 @@ def main():
 
     client = get_llm_client(logger)
 
-    embeddings, chunks, index = load_embeddings()
-    if embeddings is None:
-        logger.info(
-            "Embeddings não encontrados. Processando PDF e criando embeddings..."
-        )
-        # pdf_path = "../pdfs/manual_de_normalizacao_abnt.pdf"
-        # pdf_path = "../pdfs/Paper_PESSOAS_DIGITAL_Silvio_Meira.pdf"
-        pdf_path = "../pdfs/knightstour-SBPO.pdf"
-
-        logger.debug("Arquivo sendo processado: %s", pdf_path)
-
-        text = extract_text_from_pdf(pdf_path)
-        logger.debug("Comprimento do texto extraído: %d", len(text))
-
-        chunks = split_text_into_chunks(text)
-        logger.debug("Número de chunks gerados: %d", len(chunks))
-
-        embeddings = create_embeddings(chunks, client)
-        logger.debug(
-            "Tamanho da lista de embeddings gerada a partir dos chunks: %d",
-            len(embeddings),
-        )
-
-        index: faiss.IndexFlatL2 = create_faiss_index(embeddings)
-        save_embeddings(embeddings, chunks, index)
-        logger.info("Embeddings e índice salvos.")
-    else:
-        logger.info("Embeddings carregados dos arquivos.")
+    embeddings, chunks, index = get_embeddings(logger, client)
 
     print("Digite sua pergunta (ou 'sair' para terminar):")
     while True:
@@ -130,6 +103,40 @@ def create_embeddings(
         if (i + 1) % 10 == 0 or (i + 1) == len(texts):
             logger.info("Processados %d / %d chunks.", i + 1, len(texts))
     return embeddings
+
+
+def get_embeddings(logger, client):
+
+    embeddings, chunks, index = load_embeddings()
+    if embeddings is None:
+        logger.info(
+            "Embeddings não encontrados. Processando PDF e criando embeddings..."
+        )
+        # pdf_path = "../pdfs/manual_de_normalizacao_abnt.pdf"
+        # pdf_path = "../pdfs/Paper_PESSOAS_DIGITAL_Silvio_Meira.pdf"
+        pdf_path = "../pdfs/knightstour-SBPO.pdf"
+
+        logger.debug("Arquivo sendo processado: %s", pdf_path)
+
+        text = extract_text_from_pdf(pdf_path)
+        logger.debug("Comprimento do texto extraído: %d", len(text))
+
+        chunks = split_text_into_chunks(text)
+        logger.debug("Número de chunks gerados: %d", len(chunks))
+
+        embeddings = create_embeddings(chunks, client)
+        logger.debug(
+            "Tamanho da lista de embeddings gerada a partir dos chunks: %d",
+            len(embeddings),
+        )
+
+        index: faiss.IndexFlatL2 = create_faiss_index(embeddings)
+        save_embeddings(embeddings, chunks, index)
+        logger.info("Embeddings e índice salvos.")
+    else:
+        logger.info("Embeddings carregados dos arquivos.")
+
+    return embeddings, chunks, index
 
 
 def create_faiss_index(embeddings: List[List[float]]) -> faiss.IndexFlatL2:
