@@ -1,11 +1,16 @@
-from typing import List
+from typing import Any, List
 import faiss
 from utils.embeddings_processing import get_embedding
 from utils.indexing import search_index
 
 
 def answer_query(
-    logger, query: str, index: faiss.IndexFlatL2, chunks: List[str], client, k: int = 5
+    logger,
+    query: str,
+    index: faiss.IndexFlatL2,
+    chunks: List[str],
+    client,
+    k: int = 5,
 ) -> str:
     logger.info("Respondendo à pergunta do usuário.")
     query_embedding = get_embedding(logger, query, client)

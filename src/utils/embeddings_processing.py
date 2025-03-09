@@ -36,7 +36,7 @@ def create_embeddings(
 def get_embeddings(logger, client):
 
     embeddings, chunks, index = load_embeddings(logger)
-    if embeddings is None:
+    if len(embeddings) == 0:
         logger.info(
             "Embeddings não encontrados. Processando PDF e criando embeddings..."
         )
@@ -89,7 +89,7 @@ def load_embeddings(
     embeddings_file: str = "embeddings.pkl",
     chunks_file: str = "chunks.pkl",
     index_file: str = "faiss.index",
-):
+) -> tuple[List[List[float]], List[str], faiss.IndexFlatL2]:
     if (
         os.path.exists(embeddings_file)
         and os.path.exists(chunks_file)
@@ -100,8 +100,11 @@ def load_embeddings(
             embeddings = pickle.load(f)
         with open(chunks_file, "rb") as f:
             chunks = pickle.load(f)
-        index = faiss.read_index(index_file)
+        index: faiss.IndexFlatL2 = faiss.read_index(index_file)
         return embeddings, chunks, index
 
     logger.warning("Arquivos de embeddings não encontrados.")
-    return None, None, None
+    embeddings: List[List[float]] = []
+    chunks: List[str] = []
+    index = faiss.IndexFlatL2()
+    return embeddings, chunks, index
