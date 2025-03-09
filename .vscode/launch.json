@@ -8,7 +8,41 @@
             "name": "Debug main file",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/main.py",
+            "module": "main",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src"
+        },
+        {
+            "name": "Debug extract_code_and_doc_string file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pocs.extract_code_and_doc_string",
+            "args": [
+                "${workspaceFolder}/../ydata-profiling/src/ydata_profiling/compare_reports.py"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug reconstruct_python_file file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pocs.reconstruct_python_file",
+            "args": [
+                "${workspaceFolder}/../ydata-profiling/src/",
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug remove_doc_strings_python_file file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pocs.remove_doc_strings_python_file",
+            "args": [
+                "${workspaceFolder}/../ydata-profiling/src/",
+            ],
+            "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         },
         {

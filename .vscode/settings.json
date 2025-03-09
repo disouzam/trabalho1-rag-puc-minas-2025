@@ -2,7 +2,9 @@
     "conventionalCommits.scopes": [
         "setup",
         "dependencies",
-        "observability"
+        "observability",
+        "proof-of-concept"
     ],
-    "files.trimTrailingWhitespace": true
+    "files.trimTrailingWhitespace": true,
+    "editor.formatOnSave": true
 }
