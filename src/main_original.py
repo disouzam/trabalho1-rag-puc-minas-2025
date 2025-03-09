@@ -1,8 +1,11 @@
 """
 Módulo principal para o trabalho de uso de RAG para Engenharia de Software
 
-Baseado no trabalho original do professor Samuel Cardoso com modificações
-para o contexto de Engenharia de Software
+Aplicação original modificada ligeiramente mas que executa as funções originais
+de uma RAG focada em processamento de documentos textuais
+
+Baseada integralmente no trabalho do professor Samuel Cardoso.
+Modificações feitas por Dickson Souza podem ser conferidas no histórico de commits do repositório
 """
 
 import logging
@@ -17,7 +20,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def main():
-    logger_setup(logger, "trabalho-genai-rag-dickson.log")
+    logger_setup(logger, "genai-rag-original.log")
 
     logger.info("===============================")
     logger.info("Início da execução")
