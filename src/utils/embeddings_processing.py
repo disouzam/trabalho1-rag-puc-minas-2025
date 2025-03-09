@@ -1,10 +1,12 @@
 import os
 import pickle
 from typing import List
+import faiss
+from dotenv import load_dotenv
 from utils.pdf_processing import extract_text_from_pdf
 from utils.indexing import create_faiss_index
-import faiss
 from utils.chunk_processing import split_text_into_chunks
+from utils.repository_processing import extract_source_code_from_repository
 
 
 def get_embedding(
@@ -33,7 +35,7 @@ def create_embeddings(
     return embeddings
 
 
-def get_embeddings(logger, client):
+def get_embeddings_from_PDF_files(logger, client):
 
     embeddings, chunks, index = load_embeddings(logger)
     if len(embeddings) == 0:
@@ -47,6 +49,44 @@ def get_embeddings(logger, client):
         logger.debug("Arquivo sendo processado: %s", pdf_path)
 
         text = extract_text_from_pdf(logger, pdf_path)
+        logger.debug("Comprimento do texto extraído: %d", len(text))
+
+        chunks = split_text_into_chunks(logger, text)
+        logger.debug("Número de chunks gerados: %d", len(chunks))
+
+        embeddings = create_embeddings(logger, chunks, client)
+        logger.debug(
+            "Tamanho da lista de embeddings gerada a partir dos chunks: %d",
+            len(embeddings),
+        )
+
+        index: faiss.IndexFlatL2 = create_faiss_index(logger, embeddings)
+        save_embeddings(logger, embeddings, chunks, index)
+        logger.info("Embeddings e índice salvos.")
+    else:
+        logger.info("Embeddings carregados dos arquivos.")
+
+    return embeddings, chunks, index
+
+
+def get_embeddings_from_code_bases(logger, client):
+
+    embeddings, chunks, index = load_embeddings(logger)
+    if len(embeddings) == 0:
+        logger.info(
+            "Embeddings não encontrados. Processando repositórios de código e criando os embeddings..."
+        )
+
+        load_dotenv()
+        code_repository_path = os.getenv("REPOSITORY_1_PATH")
+
+        logger.debug("Repositório sendo processado %s", code_repository_path)
+
+        code_file_contents = extract_source_code_from_repository(
+            logger, code_repository_path
+        )
+        text = ",".join(code_file_contents)
+
         logger.debug("Comprimento do texto extraído: %d", len(text))
 
         chunks = split_text_into_chunks(logger, text)
