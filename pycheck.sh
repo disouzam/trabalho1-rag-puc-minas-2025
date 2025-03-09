@@ -8,7 +8,8 @@ echo "Python (v3) code check"
 echo "======================"
 
 
-find . -not -path '*/.*' | grep '.*.py$' > changed_files.txt
+find . -not -path '*/.*' | grep '.*.py$' > python_files.txt
+rm pylint_check.txt
 
 # Only Added and modified files are checked.
 while read -r fname; do
@@ -16,5 +17,6 @@ while read -r fname; do
   if [[ "${ext}" == "py" ]]; then
     echo "* Checking ${fname}"
     pylint --rcfile="pylint3.rc" "${fname}"
+    pylint --rcfile="pylint3.rc" "${fname}" >> pylint_check.txt
   fi
-done < "changed_files.txt"
+done < "python_files.txt"
