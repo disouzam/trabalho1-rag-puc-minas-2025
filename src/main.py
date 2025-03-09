@@ -1,24 +1,24 @@
-""" Módulo principal para o trabalho de uso de RAG para Engenharia de Software
-"""
+"""Módulo principal para o trabalho de uso de RAG para Engenharia de Software"""
+
 import os
 import re
 import logging
 import pickle
 from typing import List
-from utils.custom_logging import logger_setup
-
 import numpy as np
 import faiss
 import PyPDF2
 from dotenv import load_dotenv
 from openai import OpenAI
+from utils.custom_logging import logger_setup
 
 # Configuração do logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+
 def main():
-    logger_setup(logger, 'genai-rag.log')
+    logger_setup(logger, "genai-rag.log")
 
     logger.info("===============================")
     logger.info("Início da execução")
@@ -57,6 +57,7 @@ def main():
     logger.info("===============================")
     logger.info("")
 
+
 def get_api_key():
     load_dotenv()
     api_key = os.getenv("OPENAI_API_KEY")
@@ -67,6 +68,7 @@ def get_api_key():
         return None
     return api_key
 
+
 def extract_text_from_pdf(pdf_path: str) -> str:
     logger.info("Extraindo texto do PDF: %s", pdf_path)
     text = ""
@@ -76,8 +78,8 @@ def extract_text_from_pdf(pdf_path: str) -> str:
             for page_num in range(len(pdf_reader.pages)):
                 page = pdf_reader.pages[page_num]
                 text += page.extract_text()
-    except Exception as e:
-        logger.error("Erro ao ler o arquivo PDF: %s", e)
+    except IOError as ioerror:
+        logger.error("Erro ao ler o arquivo PDF: %s", ioerror)
     return text
 
 
@@ -106,8 +108,8 @@ def get_embedding(
         response = client.embeddings.create(input=[text], model=model)
         embedding = response.data[0].embedding
         return embedding
-    except Exception as e:
-        logger.error("Erro ao obter embedding para o texto: %s", e)
+    except IOError as ioerror:
+        logger.error("Erro ao obter embedding para o texto: %s", ioerror)
         return []
 
 
@@ -120,7 +122,7 @@ def get_embeddings(
         embedding = get_embedding(text, client, model)
         embeddings.append(embedding)
         if (i + 1) % 10 == 0 or (i + 1) == len(texts):
-            logger.info("Processados %d chunks.", (i + 1)/(len(texts)))
+            logger.info("Processados %d chunks.", (i + 1) / (len(texts)))
     return embeddings
 
 
@@ -182,7 +184,9 @@ def answer_query(
 ) -> str:
     logger.info("Respondendo à pergunta do usuário.")
     query_embedding = get_embedding(query, client)
-    indices, distances = search_index(index, query_embedding, k) # pylint: disable=unused-variable
+    indices, distances = search_index(  # pylint: disable=unused-variable
+        index, query_embedding, k
+    )
     relevant_chunks = [chunks[i] for i in indices]
     context = "\n\n".join(relevant_chunks)
     try:
@@ -193,8 +197,8 @@ def answer_query(
             messages=[
                 {
                     "role": "system",
-                    "content": "Você é um assistente que ajuda com " + \
-                    "perguntas sobre o manual de normalização ABNT.",
+                    "content": "Você é um assistente que ajuda com "
+                    + "perguntas sobre o manual de normalização ABNT.",
                 },
                 {"role": "system", "content": "Contexto:\n{context}\n\n"},
                 {"role": "user", "content": f"Pergunta: {query}"},
@@ -203,8 +207,8 @@ def answer_query(
         )
         answer = response.choices[0].message.content
         return answer
-    except Exception as e:
-        logger.error("Erro ao gerar a resposta: %s", e)
+    except IOError as ioerror:
+        logger.error("Erro ao gerar a resposta: %s", ioerror)
         return "Desculpe, ocorreu um erro ao gerar a resposta."
 
 

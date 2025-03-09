@@ -1,8 +1,10 @@
+"""Proof of concept to reconstruct a Python file using Concrete Syntax Tree"""
+
 import os
-import libcst as cst
 import sys
 import logging
 from typing import List, Tuple, Dict, Optional
+import libcst as cst
 from src.utils.custom_logging import logger_setup
 
 
@@ -19,7 +21,7 @@ class TypingCollector(cst.CSTVisitor):
     def visit_ClassDef(self, node: cst.ClassDef) -> Optional[bool]:
         self.stack.append(node.name.value)
 
-    def leave_ClassDef(self, node: cst.ClassDef) -> None:
+    def leave_ClassDef(self, original_node: cst.ClassDef) -> None:
         self.stack.pop()
 
     def visit_FunctionDef(self, node: cst.FunctionDef) -> Optional[bool]:
@@ -27,7 +29,7 @@ class TypingCollector(cst.CSTVisitor):
         self.annotations[tuple(self.stack)] = (node.params, node.returns)
         return False  # pyi files don't support inner functions, return False to stop the traversal.
 
-    def leave_FunctionDef(self, node: cst.FunctionDef) -> None:
+    def leave_FunctionDef(self, original_node: cst.FunctionDef) -> None:
         self.stack.pop()
 
 
@@ -78,7 +80,7 @@ def main(file_path):
     try:
         with open(file=file_path, mode="r", encoding="utf-8") as f:  # filename input
             file_content = f.read()
-    except:
+    except IOError:
         logger.error("Failed to parse file %s", file_path)
         return
 

@@ -1,7 +1,9 @@
+"""Proof of concept to remove comments, empty lines and docstrings"""
+
 import os
-import libcst as cst
 import sys
 import logging
+import libcst as cst
 from src.utils.custom_logging import logger_setup
 
 
@@ -102,7 +104,7 @@ def main(file_path):
     try:
         with open(file=file_path, mode="r", encoding="utf-8") as f:  # filename input
             file_content = f.read()
-    except:
+    except IOError:
         logger.error("Failed to parse file %s", file_path)
         return
 
