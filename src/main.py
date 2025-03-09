@@ -32,7 +32,8 @@ def main():
             "Embeddings não encontrados. Processando PDF e criando embeddings..."
         )
         # pdf_path = "../pdfs/manual_de_normalizacao_abnt.pdf"
-        pdf_path = "../pdfs/Paper_PESSOAS_DIGITAL_Silvio_Meira.pdf"
+        # pdf_path = "../pdfs/Paper_PESSOAS_DIGITAL_Silvio_Meira.pdf"
+        pdf_path = "../pdfs/knightstour-SBPO.pdf"
 
         logger.debug("Arquivo sendo processado: %s", pdf_path)
 
@@ -227,8 +228,8 @@ def answer_query(
             messages=[
                 {
                     "role": "system",
-                    "content": "Você é um especialista em transformação digital"
-                    + " conhecendo bastante do trabalho conduzido no Porto Digital.",
+                    "content": "Você é um jogador profissional de xadrez"
+                    + " e também cientista da computação.",
                 },
                 {"role": "system", "content": "Contexto:\n{context}\n\n"},
                 {"role": "user", "content": f"Pergunta: {query}"},
