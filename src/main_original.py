@@ -35,7 +35,19 @@ def main():
         query = input(">> ")
         if query.lower() == "sair":
             break
-        answer = answer_query(logger, query, index, chunks, client)
+
+        system_prompt = (
+            "Você é um jogador profissional de xadrez e também cientista da computação."
+        )
+
+        answer = answer_query(
+            logger=logger,
+            query=query,
+            index=index,
+            chunks=chunks,
+            system_prompt=system_prompt,
+            client=client,
+        )
         print("\nResposta:\n", answer)
 
     logger.info("Fim da execução")

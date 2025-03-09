@@ -5,7 +5,7 @@ import faiss
 from dotenv import load_dotenv
 from utils.pdf_processing import extract_text_from_pdf
 from utils.indexing import create_faiss_index
-from utils.chunk_processing import split_text_into_chunks
+from utils.chunk_processing import split_text_into_chunks, split_code_into_chunks
 from utils.repository_processing import extract_source_code_from_repository
 
 
@@ -27,7 +27,9 @@ def create_embeddings(
 ) -> List[List[float]]:
     embeddings = []
     logger.info("Gerando embeddings para os chunks.")
+
     for i, text in enumerate(texts):
+        logger.info("Tamanho do texto para gerar embedding %d", len(text))
         embedding = get_embedding(logger, text, client, model)
         embeddings.append(embedding)
         if (i + 1) % 10 == 0 or (i + 1) == len(texts):
@@ -71,7 +73,16 @@ def get_embeddings_from_PDF_files(logger, client):
 
 def get_embeddings_from_code_bases(logger, client):
 
-    embeddings, chunks, index = load_embeddings(logger)
+    embeddings_file = "embeddings_code.pkl"
+    chunks_file = "chunks_code.pkl"
+    index_file = "faiss_code.index"
+
+    embeddings, chunks, index = load_embeddings(
+        logger=logger,
+        embeddings_file=embeddings_file,
+        chunks_file=chunks_file,
+        index_file=index_file,
+    )
     if len(embeddings) == 0:
         logger.info(
             "Embeddings não encontrados. Processando repositórios de código e criando os embeddings..."
@@ -89,7 +100,7 @@ def get_embeddings_from_code_bases(logger, client):
 
         logger.debug("Comprimento do texto extraído: %d", len(text))
 
-        chunks = split_text_into_chunks(logger, text)
+        chunks = split_code_into_chunks(logger, text)
         logger.debug("Número de chunks gerados: %d", len(chunks))
 
         embeddings = create_embeddings(logger, chunks, client)
@@ -99,7 +110,16 @@ def get_embeddings_from_code_bases(logger, client):
         )
 
         index: faiss.IndexFlatL2 = create_faiss_index(logger, embeddings)
-        save_embeddings(logger, embeddings, chunks, index)
+
+        save_embeddings(
+            logger=logger,
+            embeddings=embeddings,
+            chunks=chunks,
+            index=index,
+            embeddings_file=embeddings_file,
+            chunks_file=chunks_file,
+            index_file=index_file,
+        )
         logger.info("Embeddings e índice salvos.")
     else:
         logger.info("Embeddings carregados dos arquivos.")
@@ -117,10 +137,13 @@ def save_embeddings(
     index_file: str = "faiss.index",
 ):
     logger.info("Salvando embeddings, chunks e índice no disco.")
+
     with open(embeddings_file, "wb") as f:
         pickle.dump(embeddings, f)
+
     with open(chunks_file, "wb") as f:
         pickle.dump(chunks, f)
+
     faiss.write_index(index, index_file)
 
 

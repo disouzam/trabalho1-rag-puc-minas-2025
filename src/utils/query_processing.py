@@ -9,6 +9,7 @@ def answer_query(
     query: str,
     index: faiss.IndexFlatL2,
     chunks: List[str],
+    system_prompt: str,
     client,
     k: int = 5,
 ) -> str:
@@ -36,11 +37,7 @@ def answer_query(
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "system",
-                    "content": "Você é um jogador profissional de xadrez"
-                    + " e também cientista da computação.",
-                },
+                {"role": "system", "content": system_prompt},
                 {"role": "system", "content": "Contexto:\n{context}\n\n"},
                 {"role": "user", "content": f"Pergunta: {query}"},
             ],
