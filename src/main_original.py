@@ -1,4 +1,12 @@
-"""Módulo principal para o trabalho de uso de RAG para Engenharia de Software"""
+"""
+Módulo principal para o trabalho de uso de RAG para Engenharia de Software
+
+Aplicação original modificada ligeiramente mas que executa as funções originais
+de uma RAG focada em processamento de documentos textuais
+
+Baseada integralmente no trabalho do professor Samuel Cardoso.
+Modificações feitas por Dickson Souza podem ser conferidas no histórico de commits do repositório
+"""
 
 import os
 import re

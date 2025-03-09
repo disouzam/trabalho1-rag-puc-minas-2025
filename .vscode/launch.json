@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug main file",
+            "name": "Debug original RAG application (by Samuel Cardoso)",
             "type": "debugpy",
             "request": "launch",
-            "module": "main",
+            "module": "main_original",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src"
         },
