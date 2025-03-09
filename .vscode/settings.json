@@ -6,5 +6,19 @@
         "proof-of-concept"
     ],
     "files.trimTrailingWhitespace": true,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true,
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/src/*"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src/*"
+    ],
+    "pylint.importStrategy": "fromEnvironment",
+    "pylint.path": [
+        "${workspaceFolder}/.venv/python",
+        "-m",
+        "pylint"
+    ]
 }
