@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+from dill.pointers import children
 import libcst as cst
 
 
@@ -97,6 +99,7 @@ class RemoveFunctionsWithoutDocStrings(cst.CSTTransformer):
         self.visitor = visitor
         self.function_chunks: list[str] = []
         self.undocumented_functions: list[str] = []
+        self.undocumented_function_names: list[str] = []
 
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
@@ -107,9 +110,12 @@ class RemoveFunctionsWithoutDocStrings(cst.CSTTransformer):
 
         if docstring is None or len(docstring.strip()) == 0:
             updated_node = cst.RemoveFromParent()
+
             self.undocumented_functions.append(
                 cst.Module([]).code_for_node(original_node)
             )
+
+            self.undocumented_function_names.append(original_node.name.value)
         else:
             # https://stackoverflow.com/questions/60867937/libcst-converting-arbitrary-nodes-to-code/63421188#63421188
             self.function_chunks.append(cst.Module([]).code_for_node(original_node))
@@ -132,6 +138,7 @@ def get_undocumented_functions(logger, code_content: str, file_name: str):
     modified_tree = source_tree.visit(transformer)
 
     undocumented_functions = transformer.undocumented_functions
+    undocumented_function_names = transformer.undocumented_function_names
 
     logger.info(
         "Existem %d funções não documentadas no arquivo %s",
@@ -139,4 +146,41 @@ def get_undocumented_functions(logger, code_content: str, file_name: str):
         file_name,
     )
 
-    return undocumented_functions
+    return (undocumented_function_names, undocumented_functions)
+
+
+class InsertDocStringVisitor(cst.CSTVisitor):
+    def __init__(self):
+        pass
+
+
+class InsertDocStringTransformer(cst.CSTTransformer):
+    def __init__(self, visitor, functions_and_docstrings):
+        self.visitor = visitor
+        self.functions_and_docstrings = functions_and_docstrings
+
+    def leave_FunctionDef(
+        self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
+    ) -> (
+        cst.BaseStatement | cst.FlattenSentinel[cst.BaseStatement] | cst.RemovalSentinel
+    ):
+        docstring = original_node.get_docstring()
+        function_name = original_node.name.value
+
+        if function_name in self.functions_and_docstrings:
+            new_docstring_text = self.functions_and_docstrings[function_name]
+
+        if docstring is None:
+            # https://stackoverflow.com/questions/67925466/libcst-inserting-new-node-adds-inline-code-and-a-semicolon/77019008#77019008
+            new_doc_string_node = [
+                cst.SimpleStatementLine(
+                    [cst.Expr(cst.FormattedStringExpression(new_docstring_text))]
+                )
+            ]
+            old_sequence = list(original_node.body.body)
+            new_sequence = new_doc_string_node + old_sequence
+
+            new_body = cst.IndentedBlock(body=new_sequence)
+            updated_node = original_node.with_changes(body=new_body)
+
+        return updated_node

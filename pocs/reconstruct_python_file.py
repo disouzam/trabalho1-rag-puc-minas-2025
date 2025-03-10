@@ -108,10 +108,6 @@ if __name__ == "__main__":
     abs_path = os.path.abspath(folder_path)
 
     for dirpath, dirnames, filenames in os.walk(abs_path):
-        print(dirpath)
-        print(dirnames)
-        print(filenames)
-
         for filename in filenames:
             if filename.endswith(".py"):
                 fullpath = os.path.join(dirpath, filename)
