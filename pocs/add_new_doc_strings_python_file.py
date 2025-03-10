@@ -26,11 +26,11 @@ def main(file_path):
         return
 
     # InsertDocStringVisitor, InsertDocStringTransformer
+
+    functions_and_docstrings = {}
     visitor = InsertDocStringVisitor()
     transformer = InsertDocStringTransformer(
-        visitor=visitor,
-        functions_to_rewrite=[],
-        docstrings=[],
+        visitor=visitor, functions_and_docstrings=functions_and_docstrings
     )
     with open(file_path, mode="r", encoding="utf-8") as code_file:
         file_content = code_file.read()

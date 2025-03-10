@@ -112,7 +112,17 @@ def main():
                 docstring = docstring[2:-1]
                 docstring = "\n".join(docstring)
                 docstring = docstring.strip()
-                docstring = "'" + docstring + "'"
+
+                #  Remove leading double quotes
+                while docstring[0] == '"':
+                    docstring = docstring[1:]
+
+                #  Remove leading double quotes
+                while docstring[-1] == '"':
+                    docstring = docstring[:-1]
+
+                docstring = '"""' + docstring + '"""'
+                # docstring = "'" + docstring + "'"
 
                 functions_and_docstrings[function_name] = docstring
 

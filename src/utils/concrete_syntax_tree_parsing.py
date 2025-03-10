@@ -158,6 +158,7 @@ class InsertDocStringTransformer(cst.CSTTransformer):
     def __init__(self, visitor, functions_and_docstrings):
         self.visitor = visitor
         self.functions_and_docstrings = functions_and_docstrings
+        # self.switch_value = False
 
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
@@ -172,9 +173,22 @@ class InsertDocStringTransformer(cst.CSTTransformer):
 
         if docstring is None:
             # https://stackoverflow.com/questions/67925466/libcst-inserting-new-node-adds-inline-code-and-a-semicolon/77019008#77019008
+            # new_docstring_text_2 = ""
+            # if self.switch_value:
+            #     new_docstring_text_2 = '"""docstring 1"""'
+            # else:
+            #     new_docstring_text_2 = '"docstring 2"'
+
+            # self.switch_value = not self.switch_value
+            # new_doc_string_node = [
+            #     cst.SimpleStatementLine(
+            #         [cst.Expr(cst.SimpleString(new_docstring_text_2))]
+            #     )
+            # ]
+
             new_doc_string_node = [
                 cst.SimpleStatementLine(
-                    [cst.Expr(cst.FormattedStringExpression(new_docstring_text))]
+                    [cst.Expr(cst.SimpleString(new_docstring_text))]
                 )
             ]
             old_sequence = list(original_node.body.body)
