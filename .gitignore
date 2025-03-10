@@ -5,3 +5,6 @@ faiss.index
 __pycache__
 python_files.txt
 pylint_check.txt
+chunks_code.pkl
+embeddings_code.pkl
+faiss_code.index

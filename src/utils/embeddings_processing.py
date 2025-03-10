@@ -93,7 +93,7 @@ def get_embeddings_from_code_bases(logger, client):
 
         logger.debug("Repositório sendo processado %s", code_repository_path)
 
-        code_file_contents = extract_source_code_from_repository(
+        code_file_contents, file_names = extract_source_code_from_repository(
             logger, code_repository_path
         )
 
@@ -101,8 +101,11 @@ def get_embeddings_from_code_bases(logger, client):
             "Número de arquivos-fonte a serem processados: %d", len(code_file_contents)
         )
 
-        for code_file_content in code_file_contents:
-            current_file_chunks = split_code_into_chunks(logger, code_file_content)
+        for code_file_position, code_file_content in enumerate(code_file_contents):
+            file_name = file_names[code_file_position]
+            current_file_chunks = split_code_into_chunks(
+                logger=logger, code_content=code_file_content, file_name=file_name
+            )
             chunks = chunks + current_file_chunks
 
         logger.debug("Número de chunks gerados: %d", len(chunks))
