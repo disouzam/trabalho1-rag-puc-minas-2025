@@ -95,7 +95,8 @@ class FunctionWithDocsStrings(cst.CSTVisitor):
 class RemoveFunctionsWithoutDocStrings(cst.CSTTransformer):
     def __init__(self, visitor):
         self.visitor = visitor
-        self.function_chunks = []
+        self.function_chunks: list[str] = []
+        self.undocumented_functions: list[str] = []
 
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
@@ -106,6 +107,9 @@ class RemoveFunctionsWithoutDocStrings(cst.CSTTransformer):
 
         if docstring is None or len(docstring.strip()) == 0:
             updated_node = cst.RemoveFromParent()
+            self.undocumented_functions.append(
+                cst.Module([]).code_for_node(original_node)
+            )
         else:
             # https://stackoverflow.com/questions/60867937/libcst-converting-arbitrary-nodes-to-code/63421188#63421188
             self.function_chunks.append(cst.Module([]).code_for_node(original_node))
@@ -116,3 +120,23 @@ class RemoveFunctionsWithoutDocStrings(cst.CSTTransformer):
         self, original_node: cst.Arg, updated_node: cst.Arg
     ) -> cst.Arg | cst.FlattenSentinel[cst.Arg] | cst.RemovalSentinel:
         return super().leave_Arg(original_node, updated_node)
+
+
+def get_undocumented_functions(logger, code_content: str, file_name: str):
+    logger.info("Obtendo as funções não documentadas no arquivo %s.", file_name)
+
+    source_tree = cst.parse_module(source=code_content)
+
+    visitor = FunctionWithDocsStrings()
+    transformer = RemoveFunctionsWithoutDocStrings(visitor)
+    modified_tree = source_tree.visit(transformer)
+
+    undocumented_functions = transformer.undocumented_functions
+
+    logger.info(
+        "Existem %d funções não documentadas no arquivo %s",
+        len(undocumented_functions),
+        file_name,
+    )
+
+    return undocumented_functions
