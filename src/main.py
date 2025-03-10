@@ -60,13 +60,23 @@ def main():
         "Você é um assistente de geração de documentação de códigos em Python."
     )
 
+    command = ""
     for item in undocumented_functions.items():
 
         file_name = item[0]
         undoc_functions = item[1]
 
         for function in undoc_functions:
-            query = f"Gere a docstring para essa função: \n {function}"
+            query = (
+                f"Gere a docstring para essa função, no idioma inglês: \n {function}"
+            )
+
+            logger.info(
+                "Essa é a função que se deseja gerar uma docstring: \n%s", function
+            )
+
+            command = input("Pressione Enter para enviar pergunta ao ChatGPT...\n")
+
             answer = answer_query(
                 logger=logger,
                 query=query,
@@ -77,9 +87,12 @@ def main():
             )
             print("\n\nResposta:\n", answer)
 
-            query = input("Enter para continuar, X pra sair")
-            if query.lower() == "x":
+            command = input("Pressione Enter para continuar ou Digite X pra sair.\n")
+            if command.lower() == "x":
                 break
+
+        if command.lower() == "x":
+            break
 
     logger.info("Fim da execução")
     logger.info("===============================")
