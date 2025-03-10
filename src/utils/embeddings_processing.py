@@ -103,8 +103,15 @@ def get_embeddings_from_code_bases(logger, client):
 
         for code_file_position, code_file_content in enumerate(code_file_contents):
             file_name = file_names[code_file_position]
+
+            file_name = file_name.replace(code_repository_path, "")  # type: ignore
+            file_name = file_name.strip("\\")
+            file_name = file_name.strip("/")
+
             current_file_chunks = split_code_into_chunks(
-                logger=logger, code_content=code_file_content, file_name=file_name
+                logger=logger,
+                code_content=code_file_content,
+                file_name=file_name,
             )
             chunks = chunks + current_file_chunks
 
