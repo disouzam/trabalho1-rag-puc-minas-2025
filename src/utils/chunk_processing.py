@@ -40,12 +40,10 @@ def split_code_into_chunks(
     function_chunks = transformer.function_chunks
 
     chunks = []
-    current_chunk = ""
     for function_chunk in function_chunks:
         if len(function_chunk) <= max_chunk_size:
             chunks.append(function_chunk)
         else:
-            original_chunk_size = len(function_chunk)
             splitted_function = function_chunk.split("\n")
 
             partial_chunk = ""
@@ -60,5 +58,5 @@ def split_code_into_chunks(
             if len(partial_chunk) > 0:
                 chunks.append(partial_chunk)
 
-    logger.info("Total de chunks criados: %d", len(chunks))
+    logger.debug("Total de chunks criados: %d", len(chunks))
     return chunks

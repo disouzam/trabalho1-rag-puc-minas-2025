@@ -129,7 +129,7 @@ class RemoveFunctionsWithoutDocStrings(cst.CSTTransformer):
 
 
 def get_undocumented_functions(logger, code_content: str, file_name: str):
-    logger.info("Obtendo as funções não documentadas no arquivo %s.", file_name)
+    logger.debug("Obtendo as funções não documentadas no arquivo %s.", file_name)
 
     source_tree = cst.parse_module(source=code_content)
 
@@ -140,7 +140,7 @@ def get_undocumented_functions(logger, code_content: str, file_name: str):
     undocumented_functions = transformer.undocumented_functions
     undocumented_function_names = transformer.undocumented_function_names
 
-    logger.info(
+    logger.debug(
         "Existem %d funções não documentadas no arquivo %s",
         len(undocumented_functions),
         file_name,

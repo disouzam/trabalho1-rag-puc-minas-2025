@@ -46,7 +46,7 @@ def main():
 
     client = get_llm_client(logger)
 
-    embeddings, chunks, index = get_embeddings_from_code_bases(logger, client)
+    _, chunks, index = get_embeddings_from_code_bases(logger, client)
 
     load_dotenv()
     code_repository_path = os.getenv("REPOSITORY_1_PATH")
@@ -78,8 +78,6 @@ def main():
     for item in undocumented_functions.items():
 
         file_name = item[0]
-        functions_to_rewrite = []
-        docstrings = []
         functions_and_docstrings = {}
         undoc_functions = item[1][1]
 
@@ -92,7 +90,7 @@ def main():
                 "Essa é a função que se deseja gerar uma docstring: \n%s", function
             )
 
-            # command = input("Pressione Enter para enviar pergunta ao ChatGPT...\n")
+            command = input("Pressione Enter para enviar pergunta ao ChatGPT...\n")
 
             answer = answer_query(
                 logger=logger,
@@ -126,9 +124,9 @@ def main():
 
                 functions_and_docstrings[function_name] = docstring
 
-            # command = input("Pressione Enter para continuar ou Digite X pra sair.\n")
-            # if command.lower() == "x":
-            #     break
+            command = input("Pressione Enter para continuar ou Digite X pra sair.\n")
+            if command.lower() == "x":
+                break
 
         # InsertDocStringVisitor, InsertDocStringTransformer
         visitor = InsertDocStringVisitor()

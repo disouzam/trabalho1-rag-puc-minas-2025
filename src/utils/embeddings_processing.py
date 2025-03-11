@@ -26,14 +26,14 @@ def create_embeddings(
     logger, texts: List[str], client, model: str = "text-embedding-3-small"
 ) -> List[List[float]]:
     embeddings = []
-    logger.info("Gerando embeddings para os chunks.")
+    logger.debug("Gerando embeddings para os chunks.")
 
     for i, text in enumerate(texts):
-        logger.info("Tamanho do texto para gerar embedding %d", len(text))
+        logger.debug("Tamanho do texto para gerar embedding %d", len(text))
         embedding = get_embedding(logger, text, client, model)
         embeddings.append(embedding)
         if (i + 1) % 10 == 0 or (i + 1) == len(texts):
-            logger.info("Processados %d / %d chunks.", i + 1, len(texts))
+            logger.debug("Processados %d / %d chunks.", i + 1, len(texts))
     return embeddings
 
 
