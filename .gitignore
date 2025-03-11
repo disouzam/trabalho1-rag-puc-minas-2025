@@ -1,10 +1,8 @@
-.env
-chunks.pkl
-embeddings.pkl
-faiss.index
 __pycache__
+.env
+*.pkl
+*.index
+*.log
+*.log.*
 python_files.txt
 pylint_check.txt
-chunks_code.pkl
-embeddings_code.pkl
-faiss_code.index
