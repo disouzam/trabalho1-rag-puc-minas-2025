@@ -15,10 +15,19 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/src/*"
     ],
+    "python.analysis.exclude": [
+        "${workspaceFolder}/.venv/**",
+        "**/.vscode/extensions/*"
+    ],
+    "python.analysis.ignore": [
+        "${workspaceFolder}/.venv/**",
+        "**/.vscode/extensions/*"
+    ],
     "pylint.importStrategy": "fromEnvironment",
     "pylint.path": [
         "${workspaceFolder}/.venv/python",
         "-m",
         "pylint"
-    ]
+    ],
+    "todo-tree.tree.scanMode": "workspace only"
 }

@@ -6,8 +6,8 @@ import logging
 import libcst as cst
 from src.utils.custom_logging import logger_setup
 from src.utils.concrete_syntax_tree_parsing import (
-    TypingCollector,
-    RemoveDocStringTransformer,
+    InsertDocStringTransformer,
+    InsertDocStringVisitor,
 )
 
 # Configuração do logging
@@ -25,13 +25,18 @@ def main(file_path):
         logger.error("Failed to parse file %s", file_path)
         return
 
-    source_tree = cst.parse_module(source=file_content)
+    # InsertDocStringVisitor, InsertDocStringTransformer
 
-    visitor = TypingCollector()
-    transformer = RemoveDocStringTransformer(visitor)
+    functions_and_docstrings = {}
+    visitor = InsertDocStringVisitor()
+    transformer = InsertDocStringTransformer(
+        visitor=visitor, functions_and_docstrings=functions_and_docstrings
+    )
+    with open(file_path, mode="r", encoding="utf-8") as code_file:
+        file_content = code_file.read()
+    source_tree = cst.parse_module(source=file_content)
     modified_tree = source_tree.visit(transformer)
 
-    print(modified_tree.code)
     file_reconstructed = modified_tree.code
 
     with open(file_path, "w", encoding="utf-8") as f:  # filename output
@@ -39,7 +44,7 @@ def main(file_path):
 
 
 if __name__ == "__main__":
-    logger_setup(logger, "pocs/remove_doc_strings_python_file.log")
+    logger_setup(logger, "pocs/add_new_doc_strings_python_file.log")
 
     logger.info("===============================")
     logger.info("Início da execução")

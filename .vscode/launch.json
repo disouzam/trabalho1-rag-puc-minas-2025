@@ -32,6 +32,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Debug extract_individual_nodes file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pocs.extract_individual_nodes",
+            "args": [
+                "${workspaceFolder}/../ydata-profiling/src/ydata_profiling/compare_reports.py"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Debug reconstruct_python_file file",
             "type": "debugpy",
             "request": "launch",
@@ -47,6 +58,17 @@
             "type": "debugpy",
             "request": "launch",
             "module": "pocs.remove_doc_strings_python_file",
+            "args": [
+                "${workspaceFolder}/../ydata-profiling/src/",
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug add_new_doc_strings_python_file file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pocs.add_new_doc_strings_python_file",
             "args": [
                 "${workspaceFolder}/../ydata-profiling/src/",
             ],

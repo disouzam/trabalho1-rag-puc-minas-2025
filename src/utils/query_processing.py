@@ -1,11 +1,17 @@
-from typing import List
+from typing import Any, List
 import faiss
 from utils.embeddings_processing import get_embedding
 from utils.indexing import search_index
 
 
 def answer_query(
-    logger, query: str, index: faiss.IndexFlatL2, chunks: List[str], client, k: int = 5
+    logger,
+    query: str,
+    index: faiss.IndexFlatL2,
+    chunks: List[str],
+    system_prompt: str,
+    client,
+    k: int = 5,
 ) -> str:
     logger.info("Respondendo à pergunta do usuário.")
     query_embedding = get_embedding(logger, query, client)
@@ -31,11 +37,7 @@ def answer_query(
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "system",
-                    "content": "Você é um jogador profissional de xadrez"
-                    + " e também cientista da computação.",
-                },
+                {"role": "system", "content": system_prompt},
                 {"role": "system", "content": "Contexto:\n{context}\n\n"},
                 {"role": "user", "content": f"Pergunta: {query}"},
             ],

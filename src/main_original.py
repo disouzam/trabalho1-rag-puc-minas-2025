@@ -11,7 +11,7 @@ Modificações feitas por Dickson Souza podem ser conferidas no histórico de co
 import logging
 from utils.custom_logging import logger_setup
 from utils.llm_connection import get_llm_client
-from utils.embeddings_processing import get_embeddings
+from utils.embeddings_processing import get_embeddings_from_PDF_files
 from utils.query_processing import answer_query
 
 # Configuração do logging
@@ -28,14 +28,26 @@ def main():
 
     client = get_llm_client(logger)
 
-    embeddings, chunks, index = get_embeddings(logger, client)
+    embeddings, chunks, index = get_embeddings_from_PDF_files(logger, client)
 
     print("Digite sua pergunta (ou 'sair' para terminar):")
     while True:
         query = input(">> ")
         if query.lower() == "sair":
             break
-        answer = answer_query(logger, query, index, chunks, client)
+
+        system_prompt = (
+            "Você é um jogador profissional de xadrez e também cientista da computação."
+        )
+
+        answer = answer_query(
+            logger=logger,
+            query=query,
+            index=index,
+            chunks=chunks,
+            system_prompt=system_prompt,
+            client=client,
+        )
         print("\nResposta:\n", answer)
 
     logger.info("Fim da execução")
